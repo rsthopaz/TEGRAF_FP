@@ -1,0 +1,95 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Container for layout */
+.container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100%;
+    background-color: #f4f4f4;
+}
+
+/* Header styling */
+header {
+    position: fixed;
+    width: 100%;
+    height: 60px;
+    background-color: #444;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    top: 0;
+}
+
+/* Sidebar styling */
+.sidebar {
+    width: 25%;
+    padding: 20px;
+    background-color: white;
+    margin-top: 60px; /* To avoid overlapping with header */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Map container styling */
+.map-container {
+    width: 75%;
+    height: calc(100vh - 60px); /* Full height minus header */
+    margin-top: 60px; /* To avoid overlapping with header */
+    padding: 10px;
+}
+
+/* Form styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Map styling */
+.map {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+}
+
+/* Additional Styling for Input Labels */
+label {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}

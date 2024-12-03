@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Zet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+
+    <!-- Add Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+
+    <style>
+        /* Updated CSS for layout */
+        html,
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            /* Prevents scrolling */
+        }
+
+        .app-container {
+
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            /* Fill the full height of the viewport */
+            width: 100%;
+            /* Fill the full width of the viewport */
+        }
+
+        .custom-scroll::-webikit-scrollnar{
+            width: 80%;
+        }
+
+        .sidebar {
+            width: 40%;
+            height: 100vh;
+            background-color: #f9f9f9;
+            padding: 0px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            /* Allows scrolling if content overflows */
+        }
+
+        .sidebar h1 {
+            font-size: 1.8em;
+            color: #1560BD;
+            margin-bottom: 20px;
+        }
+
+        .sidebar form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sidebar label {
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .sidebar input[type="text"] {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .sidebar button[type="submit"] {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #1560BD;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar button[type="submit"]:hover {
+            background-color: #0d47a1;
+        }
+
+        .sidebar img {
+            width: 100%;
+            /* or a fixed width like 200px */
+            height: 100%;
+        }
+
+        .sidebar select {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .image-container {
+            width: 100%;
+            height: auto;
+            background: linear-gradient(to top, rgb(19, 19, 255), rgb(78, 78, 255), rgb(151, 151, 255)); /* Blue to green gradient */
+            /* Blue background color */
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            /* Remove any margins */
+            padding: 0;
+            /* Remove any padding */
+            box-sizing: border-box;
+            /* Ensures width includes padding and borders */
+        }
+
+        .image-container img {
+            width: auto;
+            justify-content: center;
+        }
+
+        .sidebar #route-text {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .sidebar #halte-text {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Kustomisasi scrollbar */
+.custom-scroll::-webkit-scrollbar {
+    width: 12px; /* Lebar scrollbar */
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background-color: #1560BD; /* Warna bagian scrollbar */
+    border-radius: 10px;
+    border: 3px solid #fff; /* Border putih */
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #0d47a1; /* Ganti warna saat hover */
+}
+
+/* .custom-scroll::-webkit-scrollbar-track {
+    background: #f0f0f0; 
+    border-radius: 10px;
+} */
+
+/* Efek transisi saat hover */
+/* .custom-scroll::-webkit-scrollbar-thumb {
+    transition: background-color 0.3s ease;
+} */
+
+
+        .map-container {
+            width: 70%;
+            height: 100%;
+            /* Fill the full height of the viewport */
+            position: relative;
+        }
+
+        .sidebar2 {
+            padding: 20px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            /* Ensure the map container fills its parent */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        
+        <div class="sidebar custom-scroll">
+            <div class="image-container">
+                <!-- <img src="static/bim1.png" alt="Map Logo"> -->
+                <img src="static/buszet.png" alt="">
+            </div>
+            <div class="sidebar2">
+                <h1>Find Route with Halte</h1>
+                <form id="route-form">
+                    <label for="start">Start Location:</label>
+                    <select id="start" required>
+                        <option value="Surabaya">Surabaya</option>
+                        <option value="Malang">Malang</option>
+                        <option value="Batu">Batu</option>
+                        <option value="Tuban">Tuban</option>
+                        <option value="Gresik">Gresik</option>
+                        <option value="Sidoarjo">Sidoarjo</option>
+                        <option value="Probolinggo">Probolinggo</option>
+                        <option value="Jember">Jember</option>
+                        <option value="Jombang">Jombang</option>
+                        <option value="Kediri">Kediri</option>
+                        <option value="Lamongan">Lamongan</option>
+                        <option value="Blitar">Blitar</option>
+                        <option value="Bojonegoro">Bojonegoro</option>
+                        <option value="Madiun">Madiun</option>
+                        <option value="Magetan">Magetan</option>
+                        <option value="Pasuruan">Pasuruan</option>
+                        <option value="Lumajang">Lumajang</option>
+                        <option value="Bondowoso">Bondowoso</option>
+                        <option value="Bangkalan">Bangkalan</option>
+                        <option value="Banyuwangi">Banyuwangi</option>
+                        <option value="Mojokerto">Mojokerto</option>
+                        <option value="Nganjuk">Nganjuk</option>
+                        <option value="Ponorogo">Ponorogo</option>
+                        <option value="Situbondo">Situbondo</option>
+                        <option value="Sampang">Sampang</option>
+                        <option value="Pamekasan">Pamekasan</option>
+                        <option value="Sumenep">Sumenep</option>
+                        <option value="Trenggalek">Trenggalek</option>
+                        <option value="Tulungagung">Tulungagung</option>
+                        <option value="Ngawi">Ngawi</option>
+                        <option value="Pacitan">Pacitan</option>
+                    </select>
+                    <label for="start-halte">Start Halte:</label>
+                    <select id="start-halte" hidden disabled>
+                        <option value="">-- Select Halte --</option>
+                    </select>
+                    <!-- <input type="text" id="start" value="Kediri" required> -->
+                    <label for="end">End Location:</label>
+                    <select id="end" required>
+                        <!-- Salin opsi yang sama seperti di atas -->
+                        <option value="Surabaya">Surabaya</option>
+                        <option value="Malang">Malang</option>
+                        <option value="Batu">Batu</option>
+                        <option value="Tuban">Tuban</option>
+                        <option value="Gresik">Gresik</option>
+                        <option value="Sidoarjo">Sidoarjo</option>
+                        <option value="Probolinggo">Probolinggo</option>
+                        <option value="Jember">Jember</option>
+                        <option value="Jombang">Jombang</option>
+                        <option value="Kediri">Kediri</option>
+                        <option value="Lamongan">Lamongan</option>
+                        <option value="Blitar">Blitar</option>
+                        <option value="Bojonegoro">Bojonegoro</option>
+                        <option value="Madiun">Madiun</option>
+                        <option value="Magetan">Magetan</option>
+                        <option value="Pasuruan">Pasuruan</option>
+                        <option value="Lumajang">Lumajang</option>
+                        <option value="Bondowoso">Bondowoso</option>
+                        <option value="Bangkalan">Bangkalan</option>
+                        <option value="Banyuwangi">Banyuwangi</option>
+                        <option value="Mojokerto">Mojokerto</option>
+                        <option value="Nganjuk">Nganjuk</option>
+                        <option value="Ponorogo">Ponorogo</option>
+                        <option value="Situbondo">Situbondo</option>
+                        <option value="Sampang">Sampang</option>
+                        <option value="Pamekasan">Pamekasan</option>
+                        <option value="Sumenep">Sumenep</option>
+                        <option value="Trenggalek">Trenggalek</option>
+                        <option value="Tulungagung">Tulungagung</option>
+                        <option value="Ngawi">Ngawi</option>
+                        <option value="Pacitan">Pacitan</option>
+                    </select>
+                    <label for="end-halte">End Halte:</label>
+                    <select id="end-halte" hidden disabled>
+                        <option value="">-- Select Halte --</option>
+                    </select>
+                    <!-- <input type="text" id="end" value="Madiun" required> -->
+                    <button type="submit">Find Route</button>
+                </form>
+                <div id="route-text"></div>
+                <div id="halte-text"></div>
+            </div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+        <script>
+            // Initialize map
+
+            let map;
+
+            // Function to initialize a new map
+            function initializeMap() {
+                if (map) {
+                    map.remove(); // Remove the existing map
+                }
+                map = L.map('map').setView([-7.2575, 112.7521], 8); // Centered on Surabaya
+
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 12,
+                }).addTo(map);
+            }
+
+            // Call initializeMap on page load
+            initializeMap();
+
+            // Coordinates for cities and their halte
+            const routeStops = [
+                { city: "Surabaya", coords: [-7.2575, 112.7521], halte: "Halte_Tunjungan" },
+                { city: "Surabaya", coords: [-7.278281655075619, 112.79230819921106], halte: "Halte_ITS" },
+                { city: "Sidoarjo", coords: [-7.4468, 112.7195], halte: "Halte_Sidoarjo_Terminal" },
+                { city: "Malang", coords: [-7.9666, 112.6326], halte: "Halte_Arjosari" },
+                { city: "Jember", coords: [-8.1724, 113.7008], halte: "Halte_Universitas_Jember" },
+                { city: "Sumenep", coords: [-7.0096, 113.8583], halte: "Halte_Arya_Wiraraja" },
+                { city: "Cilacap", coords: [-7.73, 109], halte: "Halte_Bangga_Bangun_Desa" },
+                { city: "Banjar", coords: [-7.37, 105.53], halte: "Halte_Banjar" },
+                { city: "Probolinggo", coords: [-7.8069864158904005, 113.22675941584397], halte: "Halte_Banyuangga" },
+                { city: "Probolinggo", coords: [-7.753, 113.215], halte: "Halte_Probolinggo" },
+                { city: "Bogor", coords: [-6.5971, 106.8060], halte: "Halte_Baranangsiang" },
+                { city: "Semarang", coords: [-6.99, 110.4225], halte: "Bawen" },
+                { city: "Purbalingga", coords: [-7.28, 109.35], halte: "Halte_Bobot_Sari" },
+                { city: "Bondowoso", coords: [-7.9404, 113.9834], halte: "Halte_Tonkol" },
+                { city: "Kediri", coords: [-7.8111, 112.0047], halte: "Halte_Kediri" },
+                { city: "Blitar", coords: [-8.083, 112.3167], halte: "Halte_Blitar" },
+                { city: "Madiun", coords: [-7.61667, 111.65], halte: "Halte_Madiun" },
+                { city: "Gresik", coords: [-7.166582474983154, 112.641337769189], halte: "Halte_Gresik" },
+                { city: "Batu", coords: [-7.87079496472473, 112.5266922088442], halte: "Halte_Batu" },
+                { city: "Mojokerto", coords: [-7.490616821144435, 112.44896962768928], halte: "Halte_Mojokerto" },
+            ];
+
+            const startLocationDropdown = document.getElementById('start');
+            const startHalteDropdown = document.getElementById('start-halte');
+            const endLocationDropdown = document.getElementById('end');
+            const endHalteDropdown = document.getElementById('end-halte');
+            function handleLocationChange(locationDropdown, halteDropdown, routeStops) {
+                const selectedCity = locationDropdown.value;
+
+                // Kosongkan opsi halte sebelumnya
+                halteDropdown.innerHTML = '<option value="">-- Select Halte --</option>';
+
+                if (selectedCity) {
+                    // Filter halte berdasarkan kota yang dipilih
+                    const haltesForCity = routeStops.filter(stop => stop.city === selectedCity);
+
+                    // Tambahkan halte ke dropdown halte
+                    haltesForCity.forEach(stop => {
+                        const option = document.createElement('option');
+                        option.value = stop.halte;
+                        option.textContent = stop.halte;
+                        halteDropdown.appendChild(option);
+                    });
+
+                    // Aktifkan dropdown halte dan tampilkan setelah ada opsi
+                    halteDropdown.disabled = haltesForCity.length === 0;
+                    halteDropdown.hidden = false;  // Show the halte dropdown
+                } else {
+                    halteDropdown.disabled = true;
+                    halteDropdown.hidden = true;  // Hide the halte dropdown
+                }
+            }
+
+            // Event listener untuk kota awal
+            startLocationDropdown.addEventListener('change', function () {
+                handleLocationChange(startLocationDropdown, startHalteDropdown, routeStops);
+            });
+
+            // Event listener untuk kota tujuan
+            endLocationDropdown.addEventListener('change', function () {
+                handleLocationChange(endLocationDropdown, endHalteDropdown, routeStops);
+            });
+
+            const halteIcon = L.icon({
+
+                iconUrl: 'https://img.icons8.com/?size=100&id=8itQTSL45zZa&format=png&color=000000',
+                iconSize: [40, 40],
+            });
+
+            const routeForm = document.getElementById('route-form');
+            const routeText = document.getElementById('route-text');
+            const halteText = document.getElementById('halte-text');
+
+            routeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                initializeMap();
+                const start = document.getElementById('start').value;
+                const end = document.getElementById('end').value;
+                const start_halte = document.getElementById('start-halte').value; // Get the selected start halte
+                const end_halte = document.getElementById('end-halte').value;
+                try {
+                    // Fetch the route from the Flask API
+                    const response = await fetch(`/route?start=${start}&end=${end}&start_halte=${start_halte}&end_halte=${end_halte}`);
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch route: ${response.statusText}`);
+                    }
+
+
+                    const { route, halte_route } = data;
+
+
+                    // map = L.map('map').setView([-7.2575, 112.7521], 8);
+                    // Clear existing layers
+                    // map.eachLayer(layer => {
+                    //     if (layer instanceof L.Marker || layer instanceof L.Routing.Control) {
+                    //         map.removeLayer(layer);
+                    //     }
+                    // });
+
+                    // Add halte icons at each route stop
+
+                    route.forEach((city, index) => {
+                        const halte = halte_route[index];
+                        const stop = routeStops.find(stop => stop.city === city && stop.halte === halte);
+                        if (stop) {
+                            const marker = L.marker(stop.coords, { icon: halteIcon }).addTo(map);
+
+                            // Show popup on mouseover
+                            if (index == 0 || index == route.length - 1) {
+                                marker.bindTooltip(`${city} (${halte})`, {
+                                    permanent: true,    // Keep the tooltip visible permanently
+                                    direction: 'top',   // Position the tooltip above the marker
+                                    offset: [0, -10]    // Offset to adjust the position (optional)
+                                }).openTooltip();
+
+                            } else {
+                                marker.on('mouseover', function () {
+                                    marker.bindPopup(`${city} (${halte})`).openPopup();
+                                });
+
+                                // Close the popup on mouseout
+                                marker.on('mouseout', function () {
+                                    marker.closePopup();
+                                });
+                            }
+                            // marker.on('mouseover', function () {
+                            //     marker.bindPopup(`${city} (${halte})`).openPopup();
+                            // });
+
+                            // // Close the popup on mouseout
+                            // marker.on('mouseout', function () {
+                            //     marker.closePopup();
+                            // });
+                        }
+                    });
+
+
+                    // Draw the route line
+                    const waypoints = route.map((city, index) => {
+                        const halte = halte_route[index];
+                        const stop = routeStops.find(stop => stop.city === city && stop.halte === halte);
+                        if (stop) {
+                            return L.latLng(stop.coords[0], stop.coords[1]);
+                        } return null;
+                    })
+
+                    L.Routing.control({
+                        waypoints: waypoints,
+                        routeWhileDragging: true,
+                        createMarker: function () { return null; },
+                        lineOptions: {
+                            styles: [{ color: '#1560BD', opacity: 0.7, weight: 4 }]
+                        },
+                        show: false,
+                    }).addTo(map);
+
+                    // Fit the map view to show the full route
+                    map.fitBounds(L.latLngBounds(waypoints));
+
+                    // Display the route text
+                    routeText.innerText = "Route: " + route.join(" - ");
+                    const formattedHalteRoute = data.halte_route.map(halte => halte.replace(/_/g, ' '));
+                    console.log(formattedHalteRoute);
+                    halteText.innerText = "Halte: " + formattedHalteRoute.join(", ");
+
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Error fetching route");
+                }
+            });
+        </script>
+</body>
+
+</html>
